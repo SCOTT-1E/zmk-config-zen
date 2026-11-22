@@ -1,128 +1,158 @@
-# Corne-ish Zen v2 — Miryoku + ZMK Studio
+# Corne-ish Zen v2 - Colemak-DH + ZMK Studio
 
-A native ZMK config for the **Corne-ish Zen v2 (GB R3)** based on Matburt's repo that reproduces the
-Miryoku layout (changed to a Colemak-DH Mod base) **and** is editable live in [ZMK Studio](https://zmk.studio/).
-I've also added back the zmk-display-patch tree for the Miryoku logo.
+A 36-key Colemak-DH configuration for the **Corne-ish Zen v2 (GB R3)**,
+editable over USB in [ZMK Studio](https://zmk.studio/).
+Based on [velochad's fork](https://github.com/velochad/zmk-config-zen) of
+[matburt's config](https://github.com/matburt/zmk-config-zen).
 
-The keymap is transcribed directly from the `manna-harbour/miryoku_zmk` generated
-layers (default / right-hand-nav), with a **QWERTY** base instead of the stock
-Colemak Mod-DH — but written as a plain keymap so Studio can read and edit it. Unlike the
-`miryoku_zmk` repo (a compile-time C-macro system Studio can't parse), you rebuild
-once and then move keys in the browser.
+This version has the eight Miryoku layers below. The additional Game and GameNum
+layers and their entry key have been removed. The native keymap, Studio unlock
+combo, and display configuration are retained.
 
-## Files
+## Build your firmware
 
+1. Open this repository's [Actions tab](https://github.com/SCOTT-1E/zmk-config-zen/actions).
+2. If GitHub says workflows are disabled for this fork, click
+   **I understand my workflows, go ahead and enable them**.
+3. Select the workflow from `.github/workflows/build.yml`, choose **Run workflow**,
+   select **main**, and run it. Future pushes to the repo also start builds.
+4. Wait for all build jobs to finish successfully, open that run, and download
+   its **firmware** artifact ZIP.
+
+The matrix in [build.yaml](build.yaml) names these three firmware files:
+
+| File | Purpose |
+| --- | --- |
+| `corneish_zen_left_studio.uf2` | Left half, with ZMK Studio support. Use this for Studio. |
+| `corneish_zen_right.uf2` | Right half, used with either left build. |
+| `corneish_zen_left.uf2` | Optional left build without Studio. |
+
+Only the central/left half needs the Studio USB snippet and
+`CONFIG_ZMK_STUDIO=y`. The build matrix enables both on the Studio variant.
+
+## Flash and connect
+
+These board targets are for the **Zen v2**. The selected physical layout has
+**36 keys / five columns per half**. A Zen v1 or a different physical layout
+requires an adjusted configuration.
+
+1. Connect the right half over USB, double-tap its reset button to enter the
+   bootloader, and copy `corneish_zen_right.uf2` to its mounted drive.
+2. Repeat for the left half using `corneish_zen_left_studio.uf2`.
+3. Connect the left half with a USB data cable.
+4. Open [ZMK Studio](https://zmk.studio/) in **Chrome or Edge**, select the USB
+   connection, and choose the keyboard's serial device.
+5. Unlock editing by pressing both **outer thumb keys** together, within 50 ms.
+   These are the Base **Esc** and **Delete** positions.
+6. Edit your keys and save the changes to the keyboard.
+
+If Studio cannot connect while the keyboard is also paired over Bluetooth,
+use the Media layer's Output key to select USB output, then reconnect.
+The [official Studio documentation](https://zmk.dev/docs/features/studio)
+also describes the native app and connection requirements.
+
+## The eight layers
+
+| Index | Layer | Activate from Base | Main use |
+| --- | --- | --- | --- |
+| 0 | Base | Default | Colemak-DH typing and home-row modifiers |
+| 1 | Nav | Hold left middle thumb / Space | Arrows, editing, clipboard, Caps Word |
+| 2 | Mouse | Hold left inner thumb / Tab | Pointer movement, scrolling, mouse clicks |
+| 3 | Media | Hold left outer thumb / Esc | Audio, Bluetooth profiles, USB/BT output |
+| 4 | Num | Hold right middle thumb / Backspace | Number pad and punctuation |
+| 5 | Sym | Hold right inner thumb / Enter | Shifted symbols |
+| 6 | Fun | Hold right outer thumb / Delete | F1-F12 and system keys |
+| 7 | Button | Hold Z or / | Clipboard and mouse clicks on either hand |
+
+Release a layer thumb to return to Base during normal momentary use.
+Layer switches represented by `&to` in the source select another layer; use its **BASE** key to return to typing. These are layer switches,
+not dedicated lock/toggle behaviors. A same-layer `&to` can be canceled when
+the original thumb hold is released.
+
+### Base modifiers
+
+Tap these keys for their letter; hold them for their modifier:
+
+| Modifier | Left-hand key | Right-hand key |
+| --- | --- | --- |
+| GUI / Windows / Command | A | O |
+| Alt / Option | R | I |
+| Ctrl | S | E |
+| Shift | T | N |
+| Right Alt / AltGr | X | . |
+
+The positional hold-taps favor opposite-hand shortcuts and use the upstream
+fork's existing balanced behavior: a 200 ms tapping term, 175 ms quick-tap,
+and 150 ms prior-idle requirement. Cross-hand nested shortcuts can resolve
+before the tapping term expires. Pressing a home-row modifier immediately
+after another letter can force its letter action instead.
+
+The current thumb keys are listed above. A dedicated thumb Shift is a
+separate remap: its existing tap/layer functions need another location.
+
+### Symbols and host keyboard layout
+
+Keep the host on a US-compatible layout such as U.S. / ABC: the firmware
+already produces the Colemak-DH letter arrangement. The symbol legends assume
+US punctuation. For example, on Sym, the Base C position is `@` and Base D is
+`#`.
+
+## Studio edits and GitHub are separate
+
+- The repository's `.keymap` file defines the compiled stock layout.
+- Studio saves live edits on the keyboard. Those saved edits can override the
+  compiled layout across firmware flashes.
+- To apply a changed stock keymap after using Studio, save a record of any
+  live edits you want to keep, then use Studio's **Restore Stock Settings**.
+- Studio changes do not automatically update this GitHub repository.
+- Combos, hold-tap timing, custom behavior definitions, and build options are
+  maintained in the source files and require a rebuild.
+
+See [ZMK's keymap persistence notes](https://zmk.dev/docs/features/studio#keymap-changes).
+
+## Clipboard on Windows/Linux and macOS
+
+The compiled clipboard keys currently use Miryoku's CUA bindings:
+Paste = Shift+Insert, Copy = Ctrl+Insert, Cut = Shift+Delete,
+Undo = `K_UNDO`, and Redo = `K_AGAIN`. Application support varies.
+
+For Mac clipboard shortcuts, replace the five `U_...` definitions near the
+top of [config/corneish_zen.keymap](config/corneish_zen.keymap) with:
+
+```c
+#define U_RDO &kp LS(LG(Z))
+#define U_PST &kp LG(V)
+#define U_CPY &kp LG(C)
+#define U_CUT &kp LG(X)
+#define U_UND &kp LG(Z)
 ```
-build.yaml                     # builds both halves; Studio snippet on the left
-config/corneish_zen.conf       # Kconfig: Studio, pointing, display
-config/corneish_zen.keymap     # the Miryoku layout as a native keymap
-```
 
-## How to use it
+The normal GUI holds already act as Command on macOS, and Alt acts as Option.
+Bluetooth profile selection does not automatically change the keyboard's
+clipboard bindings for a different OS.
 
-1. Create a GitHub repo (e.g. `zmk-config-zen`) and drop these files in — `build.yaml`
-   at the root, the other two in `config/`.
-2. Commit and push. GitHub Actions builds automatically (enable Actions if prompted).
-3. Download the artifact zip from the run. You'll get `corneish_zen_left`,
-   `corneish_zen_right`, `corneish_zen_left_studio` (Studio-enabled left), and
-   a settings-reset UF2.
-4. Flash over USB — double-tap reset, drag the matching UF2 onto the drive. Flash the
-   **right** UF2 to the right half. For the left, use **`corneish_zen_left_studio`**
-   if you want live editing, or the plain **`corneish_zen_left`** if you don't.
+## Bluetooth profiles
 
-> Best base to start from: the [ZMK new-user template](https://github.com/zmkfirmware/unified-zmk-config-template)
-> (pick Corne-ish Zen v2), or fork [LOWPROKB/zmk-config-zen-2](https://github.com/LOWPROKB/zmk-config-zen-2),
-> then replace its `build.yaml` and `config/` with these files.
+Hold Esc for Media. Its right bottom row contains **Output**, then **BT 0-3**.
 
-## Studio support: confirmed working
+- Tap a BT key without Shift to select that profile.
+- To clear a pairing, **select the intended profile first**, then hold Shift
+  and tap a BT profile key.
 
-The Zen v2 board **ships physical layouts** — verified against LowproKB's official
-zen-2 config and ZMK's `corne.dtsi`. So Studio works out of the box; no overlay needed.
-This config is set up for the **5-column (36-key)** Zen:
+All four shifted BT keys invoke `BT_CLR`, which clears the **currently selected**
+profile. A shifted key does not select its own numbered profile first.
+After clearing, pair the keyboard from the intended computer.
 
-- **Selects `zmk,physical-layout = &foostan_corne_5col_layout`** in the keymap, and the
-  keymap has 36 bindings per layer to match. (For a 6-col/42-key board, switch to
-  `&foostan_corne_6col_layout` and add the outer-column keys back.)
-- **Does NOT pin `zmk,matrix-transform`** (the old, Studio-incompatible way the stock
-  Miryoku Zen keymap used). The physical layout carries the transform now.
-- **Enables Studio per-build** via `cmake-args` on a dedicated `*_studio` artifact in
-  `build.yaml`, exactly like LowproKB — keeping the normal firmware lean.
+## Source files
 
-Filenames (`corneish_zen.keymap` / `.conf`) match LowproKB's config, so the build
-will find them.
+| File | Purpose |
+| --- | --- |
+| [config/corneish_zen.keymap](config/corneish_zen.keymap) | Layout, eight layers, custom behaviors, Studio unlock |
+| [config/corneish_zen.conf](config/corneish_zen.conf) | Pointing, e-ink display, sleep, Bluetooth |
+| [config/west.yml](config/west.yml) | ZMK source; keeps the display-patch fork used by the display options |
+| [build.yaml](build.yaml) | Normal left, normal right, and Studio-enabled left builds |
+| [.github/workflows/build.yml](.github/workflows/build.yml) | Push, pull request, and manual GitHub Actions builds |
 
-## Using ZMK Studio
+The existing `assets/keymap-layers.svg` is an inherited diagram; the
+`.keymap` file is authoritative for this Colemak-DH layout.
 
-1. Flash `corneish_zen_left_studio` to the left half and connect it over **USB**.
-2. Open <https://zmk.studio/> in Chrome or Edge and connect.
-3. **Unlock editing:** press both **outer thumb keys together** (the `&studio_unlock`
-   combo). Now you can rearrange keys and layers.
-4. Edits persist on the keyboard; a settings reset returns it to this compiled base.
-
-You only rebuild firmware for changes to combos, home-row-mod timing, the Bluetooth
-morph, or `.conf`. Everyday key swaps happen in Studio.
-
-> ### ⚠️ Pick one source of truth
->
-> There are **two independent places** the layout can live, and they do **not** sync:
->
-> - **This repo** (`config/corneish_zen.keymap`) — what CI compiles into the firmware.
-> - **The keyboard's own storage** — where ZMK Studio writes your live edits.
->
-> They can drift apart. If you edit in Studio and later flash a fresh build from
-> this repo, **the build wins and your Studio changes are gone**. If you edit the
-> keymap here but keep using Studio-saved changes on the board, the repo no longer
-> reflects what you actually type.
->
-> Decide which one is authoritative:
->
-> - **Repo as source of truth** (recommended for anything you want to keep): make
->   changes in `corneish_zen.keymap`, push, and reflash. Treat Studio as scratch —
->   a settings reset returns the board to exactly what's compiled here.
-> - **Studio as source of truth**: do your remapping in Studio and **avoid
->   reflashing**, since any new build silently overwrites the board. If you go this
->   route, periodically transcribe changes back into the keymap so the repo isn't
->   stale — the two never reconcile automatically.
-
-## What's in the layout (faithful Miryoku)
-
-All eight layers are ports of stock Miryoku, with a QWERTY base layer:
-
-- **Base** — QWERTY with home-row mods (GUI/Alt/Ctrl/Shift), AltGr mod-taps on
-  X and `.`, and a Button-layer hold on Z and `'`.
-- **Nav / Mouse / Media** — held from the left thumbs; functions on the right hand,
-  mods on the left. Nav has arrows + clipboard + INS/HOME/PGUP/PGDN/END. Mouse uses
-  ZMK pointing (`&mmv` move, `&msc` scroll, `&mkp` buttons). Media has volume/track
-  transport plus Bluetooth.
-- **Num / Sym / Fun** — held from the right thumbs; functions on the left hand, mods
-  on the right.
-- **Button** — clipboard + mouse buttons, reached by holding Z or `'`.
-
-Deviations from stock, all deliberate:
-
-- **Home-row mods are positional** (`hml`/`hmr`) instead of plain mod-taps — fewer
-  misfires. Tune `tapping-term-ms` / `flavor` at the top of the keymap.
-- **Extra and Tap alternate base layers are omitted** — the "switch base" keys on the
-  number/sym/fun layers that pointed to them are left as `&none`. "Return to Base"
-  and per-layer lock keys still work.
-- **RGB / external-power keys are `&none`** — the Zen has nice!view displays, no RGB
-  underglow, so those Miryoku keys have nothing to drive.
-
-### Clipboard
-Set to Miryoku's default (CUA / Windows-Linux: `K_AGAIN`, `LS(INS)`, `LC(INS)`,
-`LS(DEL)`, `K_UNDO`). On **macOS** these won't behave — swap the `U_RDO…U_UND`
-defines near the top of the keymap to the `LG(...)` set shown in the comment there.
-
-## Bluetooth: clear a profile / pair a new computer
-
-On the **Media** layer (hold the left outer thumb), the bottom-right row is your
-Bluetooth row: `OUT_TOG` then profiles 0–3.
-
-- **Tap** a profile key → select/switch to that profile.
-- **Shift + tap** a profile key → **clear** that profile's pairing (the keys are
-  shift-morphs, exactly like stock Miryoku).
-
-To move to a new computer: shift+tap the profile to wipe it, tap it to select
-(it starts advertising), then pair from the new computer. Do it from the left half.
-If pairing wedges, flash the **settings-reset UF2** to both halves, forget the
-keyboard everywhere, and reflash normal firmware.

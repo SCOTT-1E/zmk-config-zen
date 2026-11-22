@@ -11,8 +11,11 @@
 # Default board revision is 2.0.0 (= v2), so no @revision suffix is needed.
 include:
   - board: corneish_zen_left/nrf52840/zmk
+    artifact-name: corneish_zen_left
   - board: corneish_zen_right/nrf52840/zmk
+    artifact-name: corneish_zen_right
   - board: corneish_zen_left/nrf52840/zmk
     snippet: studio-rpc-usb-uart
     cmake-args: -DCONFIG_ZMK_STUDIO=y
     artifact-name: corneish_zen_left_studio
+
