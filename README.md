@@ -7,7 +7,10 @@ Based on [velochad's fork](https://github.com/velochad/zmk-config-zen) of
 
 This version has the eight Miryoku layers below. The additional Game and GameNum
 layers and their entry key have been removed. The native keymap, Studio unlock
-combo, and display configuration are retained.
+combo, and display configuration are retained. All six Bootloader key bindings
+are disabled; use the physical reset buttons when flashing firmware.
+
+![Eight-layer Colemak-DH cheat sheet](assets/keymap-layers.svg)
 
 ## Build your firmware
 
@@ -153,6 +156,7 @@ After clearing, pair the keyboard from the intended computer.
 | [build.yaml](build.yaml) | Normal left, normal right, and Studio-enabled left builds |
 | [.github/workflows/build.yml](.github/workflows/build.yml) | Push, pull request, and manual GitHub Actions builds |
 
-The existing `assets/keymap-layers.svg` is an inherited diagram; the
-`.keymap` file is authoritative for this Colemak-DH layout.
+The [eight-layer cheat sheet](assets/keymap-layers.svg) matches this compiled
+Colemak-DH keymap, with the Boot keys removed. Saved Studio edits need to be
+recorded in the `.keymap` file before they can be reflected in this diagram.
 
